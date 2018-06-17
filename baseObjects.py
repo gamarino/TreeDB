@@ -2,15 +2,40 @@
 
 from . import exceptions
 
+import uuid
+import hashlib
 
 class BaseException(exceptions.DBException):
     def __init__(self, code=999, msg=''):
-        super.__init__(code='BASE%3d' % code, msg=msg)
+        super(self).__init__(code='BASE%3d' % code, msg=msg)
 
 
-class Transaction:
+class Atom:
+    def __init__(self, atomId=None):
+        self.atomId = atomId
+
+class Root:
+    def __init__(self):
+        super().__init__()
+
+        self.userRoot = None
+        self.salt = uuid.uuid4()
+        self.password = None
+
+    def copyTo(self, otherRoot):
+        otherRoot.userRoot = self.userRoot
+        otherRoot.salt = self.salt
+        otherRoot.password = self.password
+
+    def setPassword(self, newPassword):
+        # TODO
+        pass
+
+
+class StorageTransaction:
     def __init__(self):
         self.readObjects = {}
+        self.rootId = None
 
     def close(self):
         pass
@@ -29,14 +54,14 @@ class Transaction:
 
 
 class Storage:
-    def OpenWriteTransaction(self):
+    def newWriteTransaction(self):
         """
         Opens a new write transaction.
         :return: the new write transaction object
         """
         raise BaseException(1, 'Not implemented')
 
-    def OpenReadTransaction(self, transactionId):
+    def newReadTransaction(self):
         """
         Opens a new read transaction.
         :return: the new write transaction object
